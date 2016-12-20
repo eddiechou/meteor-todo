@@ -15,6 +15,7 @@ if (Meteor.isServer) {
         { owner: this.userId },
       ],
     });
+  });
 }
 
 // Add methods to authenticate before executing db commands
