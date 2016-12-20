@@ -50,9 +50,20 @@ class App extends Component {
     if (this.state.hideCompleted) {
       filteredTasks = filteredTasks.filter(task => !task.checked);
     }
-    return filteredTasks.map((task) => (
-      <Task key={task._id} task={task} />
-    ));
+    // the button should show up only if the currently logged in user owns this task
+    return filteredTasks.map((task) => {
+      const currentUserId = this.props.currentUser && this.props.currentUser._id;
+      const showPrivateButton = task.owner === currentUserId;
+
+      return (
+        <Task
+          key={task._id}
+          task={task}
+          showPrivateButton={showPrivateButton}
+        />
+      );
+    });
+
   }
 
   render() {
@@ -94,11 +105,15 @@ class App extends Component {
 
 App.propTypes = {
   tasks: PropTypes.array.isRequired,
+  showPrivateButton: React.PropTypes.bool.isRequired,
   incompleteCount: PropTypes.number.isRequired,
   currentUser: PropTypes.object,
 };
 
 export default createContainer(() => {
+  // Subscribe to tasks publication
+  Meteor.subscribe('tasks');
+
   return {
     tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
     incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
